@@ -1,0 +1,1955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Bloom">
+<meta name="theme-color" content="#FFF8F0">
+<title>Bloom</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+
+/* ── TOKENS ─────────────────────────────────────────── */
+:root {
+  --cream:      #FFF8F0;
+  --blush:      #F2B5C0;
+  --blush-soft: #FAD9E0;
+  --sage:       #A8C5A0;
+  --sage-soft:  #D4E8D0;
+  --lavender:   #C9B8E8;
+  --lav-soft:   #E8E0F5;
+  --butter:     #F5E6C8;
+  --butter-soft:#FBF3E2;
+  --charcoal:   #2D2D2D;
+  --mid:        #6B6B6B;
+  --light:      #A0A0A0;
+  --white:      #FFFFFF;
+  --danger:     #E88080;
+  --danger-soft:#FAE0E0;
+
+  --radius-sm:  10px;
+  --radius-md:  18px;
+  --radius-lg:  26px;
+  --radius-xl:  36px;
+
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 20px rgba(0,0,0,0.09);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+
+  --font-body: 'Nunito', sans-serif;
+  --font-display: 'Playfair Display', serif;
+
+  --nav-height: 72px;
+  --header-height: 64px;
+}
+
+/* ── RESET ──────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%;
+  font-family: var(--font-body);
+  background: var(--cream);
+  color: var(--charcoal);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── APP SHELL ──────────────────────────────────────── */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-width: 430px;
+  margin: 0 auto;
+  background: var(--cream);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── HEADER ─────────────────────────────────────────── */
+#app-header {
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: var(--white);
+  border-bottom: 1px solid var(--blush-soft);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+.header-logo {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #E88FA0 0%, #C9B8E8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+}
+.header-date {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── SCROLL AREA ────────────────────────────────────── */
+#view-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(var(--nav-height) + 12px);
+}
+
+/* ── VIEWS ──────────────────────────────────────────── */
+.view { display: none; padding: 20px 16px; }
+.view.active { display: block; }
+
+/* ── BOTTOM NAV ─────────────────────────────────────── */
+#bottom-nav {
+  height: var(--nav-height);
+  display: flex;
+  align-items: center;
+  background: var(--white);
+  border-top: 1px solid var(--blush-soft);
+  padding: 0 8px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+}
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-btn:active { background: var(--blush-soft); }
+.nav-btn .nav-icon {
+  font-size: 22px;
+  line-height: 1;
+  transition: transform 0.15s;
+}
+.nav-btn .nav-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--light);
+  letter-spacing: 0.3px;
+  transition: color 0.15s;
+}
+.nav-btn.active .nav-label { color: var(--charcoal); }
+.nav-btn.active .nav-icon { transform: scale(1.15); }
+
+/* ── CARDS ──────────────────────────────────────────── */
+.card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 14px;
+}
+.card-title {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--light);
+  margin-bottom: 10px;
+}
+.card-amount {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--charcoal);
+  letter-spacing: -1px;
+}
+.card-amount.positive { color: #6BAF7A; }
+.card-amount.negative { color: var(--danger); }
+
+/* ── SECTION HEADER ─────────────────────────────────── */
+.section-header {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--mid);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin: 20px 0 10px 4px;
+}
+
+/* ── PILL BADGE ─────────────────────────────────────── */
+.pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.pill-blush   { background: var(--blush-soft);  color: #C0607A; }
+.pill-sage    { background: var(--sage-soft);   color: #4A8A5A; }
+.pill-lav     { background: var(--lav-soft);    color: #6A50A0; }
+.pill-butter  { background: var(--butter-soft); color: #A07840; }
+.pill-danger  { background: var(--danger-soft); color: #C04040; }
+
+/* ── PROGRESS BAR ───────────────────────────────────── */
+.progress-track {
+  height: 8px;
+  background: var(--cream);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+.progress-fill.blush   { background: linear-gradient(90deg, var(--blush), #E888A0); }
+.progress-fill.sage    { background: linear-gradient(90deg, var(--sage),  #6BAF7A); }
+.progress-fill.lav     { background: linear-gradient(90deg, var(--lavender), #A898D8); }
+.progress-fill.danger  { background: linear-gradient(90deg, var(--danger), #C04040); }
+
+/* ── BUTTONS ────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn:active { opacity: 0.8; transform: scale(0.97); }
+.btn-primary {
+  background: linear-gradient(135deg, var(--blush), var(--lavender));
+  color: var(--white);
+  width: 100%;
+}
+.btn-secondary {
+  background: var(--cream);
+  color: var(--charcoal);
+  border: 1.5px solid var(--blush-soft);
+  width: 100%;
+}
+.btn-sm {
+  padding: 8px 14px;
+  font-size: 12px;
+  border-radius: var(--radius-sm);
+}
+
+/* ── FORM ELEMENTS ──────────────────────────────────── */
+.form-group { margin-bottom: 16px; }
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mid);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.form-input {
+  width: 100%;
+  padding: 13px 15px;
+  background: var(--cream);
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--charcoal);
+  outline: none;
+  transition: border-color 0.15s;
+  -webkit-appearance: none;
+}
+.form-input:focus { border-color: var(--blush); }
+.form-select {
+  width: 100%;
+  padding: 13px 15px;
+  background: var(--cream);
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--charcoal);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23A0A0A0' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+}
+.form-select:focus { border-color: var(--blush); }
+
+/* ── MODAL ──────────────────────────────────────────── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(45,45,45,0.4);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  align-items: flex-end;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal-sheet {
+  background: var(--white);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  padding: 12px 20px 40px;
+  width: 100%;
+  max-width: 430px;
+  max-height: 92dvh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+.modal-handle {
+  width: 40px;
+  height: 4px;
+  background: var(--blush-soft);
+  border-radius: 99px;
+  margin: 0 auto 20px;
+}
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--charcoal);
+  margin-bottom: 20px;
+}
+
+/* ── TOAST ──────────────────────────────────────────── */
+#toast {
+  position: fixed;
+  bottom: calc(var(--nav-height) + 16px);
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--charcoal);
+  color: var(--white);
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 200;
+}
+#toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ── DASHBOARD SPECIFICS ────────────────────────────── */
+.balance-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.balance-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+.balance-card.full-width {
+  grid-column: 1 / -1;
+}
+.balance-card .bc-label {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--light);
+  margin-bottom: 6px;
+}
+.balance-card .bc-amount {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--charcoal);
+  letter-spacing: -0.5px;
+}
+.balance-card .bc-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--light);
+  margin-top: 3px;
+}
+.balance-card .bc-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 5px;
+}
+
+/* ── ALERT BANNER ───────────────────────────────────── */
+.alert-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.alert-banner.warning {
+  background: var(--butter-soft);
+  color: #8A6430;
+  border-left: 3px solid var(--butter);
+}
+.alert-banner.danger {
+  background: var(--danger-soft);
+  color: #B04040;
+  border-left: 3px solid var(--danger);
+}
+.alert-banner .alert-icon { font-size: 16px; flex-shrink: 0; }
+
+/* ── PAYCHECK CARD ──────────────────────────────────── */
+.paycheck-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--cream);
+}
+.paycheck-row:last-child { border-bottom: none; }
+.paycheck-row .pr-left .pr-date {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--charcoal);
+}
+.paycheck-row .pr-left .pr-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--light);
+  margin-top: 2px;
+}
+.paycheck-row .pr-amount {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--charcoal);
+}
+
+/* ── TRANSACTION ROW ────────────────────────────────── */
+.txn-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--cream);
+}
+.txn-row:last-child { border-bottom: none; }
+.txn-row .tr-desc {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--charcoal);
+}
+.txn-row .tr-meta {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--light);
+  margin-top: 2px;
+}
+.txn-row .tr-amount {
+  font-size: 15px;
+  font-weight: 700;
+}
+.txn-row .tr-amount.pos { color: #6BAF7A; }
+.txn-row .tr-amount.neg { color: var(--danger); }
+
+/* ── EMPTY STATE ────────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--light);
+}
+.empty-state .es-icon { font-size: 40px; margin-bottom: 12px; }
+.empty-state .es-text { font-size: 14px; font-weight: 600; }
+
+/* ── SETTINGS ROW ───────────────────────────────────── */
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--cream);
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-row .sr-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--charcoal);
+}
+.settings-row .sr-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--light);
+  margin-top: 2px;
+}
+.settings-row .sr-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--mid);
+}
+
+/* ── CREDIT SCORE ───────────────────────────────────── */
+.score-circle {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.score-circle .sc-num {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1;
+}
+.score-circle .sc-label {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 3px;
+}
+
+/* ── SCROLLBAR ──────────────────────────────────────── */
+#view-container::-webkit-scrollbar { display: none; }
+
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- HEADER -->
+  <header id="app-header">
+    <span class="header-logo">bloom</span>
+    <span class="header-date" id="header-date">—</span>
+  </header>
+
+  <!-- VIEWS -->
+  <div id="view-container">
+
+    <!-- DASHBOARD -->
+    <div class="view active" id="view-dashboard">
+
+      <div class="section-header">Accounts</div>
+      <div class="balance-grid">
+        <div class="balance-card">
+          <div class="bc-label">Checking</div>
+          <div class="bc-amount" id="db-checking">$0.00</div>
+          <div class="bc-sub">Main account</div>
+        </div>
+        <div class="balance-card">
+          <div class="bc-label">Savings</div>
+          <div class="bc-amount" id="db-savings">$0.00</div>
+          <div class="bc-sub">Performance</div>
+        </div>
+      </div>
+
+      <div class="section-header">Debts</div>
+      <div class="balance-grid">
+        <div class="balance-card">
+          <div class="bc-label">TEMP Card</div>
+          <div class="bc-amount negative" id="db-temp">$0.00</div>
+          <div class="bc-sub">Cap One Platinum</div>
+        </div>
+        <div class="balance-card">
+          <div class="bc-label">Platinum Card</div>
+          <div class="bc-amount" id="db-platinum">$0.00</div>
+          <div class="bc-sub">Cap One</div>
+        </div>
+        <div class="balance-card">
+          <div class="bc-label">Car Loan</div>
+          <div class="bc-amount negative" id="db-carloan">$0.00</div>
+          <div class="bc-sub" id="db-carloan-sub">—</div>
+        </div>
+        <div class="balance-card">
+          <div class="bc-label">Joey Loan</div>
+          <div class="bc-amount negative" id="db-joey">$0.00</div>
+          <div class="bc-sub" id="db-joey-sub">—</div>
+        </div>
+      </div>
+
+      <!-- TEMP Payoff Progress -->
+      <div class="card" id="temp-payoff-card">
+        <div class="card-title">🌸 TEMP Card Payoff Goal</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-size:13px;font-weight:700;color:var(--mid);" id="temp-paid-label">$0 paid off</span>
+          <span class="pill pill-blush" id="temp-months-left">— months left</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill blush" id="temp-progress-bar" style="width:0%"></div>
+        </div>
+        <div style="margin-top:10px;font-size:12px;font-weight:600;color:var(--light);" id="temp-suggestion">Suggested monthly payment: —</div>
+      </div>
+
+      <!-- Alerts -->
+      <div id="alerts-container"></div>
+
+      <!-- Upcoming Bills -->
+      <div class="section-header">Due Soon</div>
+      <div id="upcoming-bills-container">
+        <div class="empty-state">
+          <div class="es-icon">📋</div>
+          <div class="es-text">No bills due in the next 7 days</div>
+        </div>
+      </div>
+
+      <!-- Next Paycheck -->
+      <div class="section-header">Next Paycheck</div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:15px;font-weight:700;" id="next-pay-date">—</div>
+            <div style="font-size:12px;font-weight:600;color:var(--light);margin-top:3px;" id="next-pay-days">—</div>
+          </div>
+          <div style="font-family:var(--font-display);font-size:28px;font-weight:700;" id="next-pay-amount">—</div>
+        </div>
+      </div>
+
+      <!-- Credit Scores -->
+      <div class="section-header">Credit Scores</div>
+      <div class="balance-grid">
+        <div class="balance-card">
+          <div class="bc-label">TransUnion</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:6px;">
+            <div class="score-circle" style="background:var(--lav-soft);">
+              <span class="sc-num" style="color:var(--lavender);" id="db-tu-score">—</span>
+              <span class="sc-label" style="color:#8A70C0;">VS</span>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--light);">Credit Karma</div>
+              <div style="font-size:11px;font-weight:600;color:var(--mid);margin-top:2px;" id="db-tu-date">No entry yet</div>
+            </div>
+          </div>
+        </div>
+        <div class="balance-card">
+          <div class="bc-label">Equifax</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:6px;">
+            <div class="score-circle" style="background:var(--blush-soft);">
+              <span class="sc-num" style="color:var(--blush);" id="db-eq-score">—</span>
+              <span class="sc-label" style="color:#C07090;">VS</span>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--light);">Credit Karma</div>
+              <div style="font-size:11px;font-weight:600;color:var(--mid);margin-top:2px;" id="db-eq-date">No entry yet</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /dashboard -->
+
+    <!-- PAYCHECKS -->
+    <div class="view" id="view-paychecks">
+      <div class="section-header">Paychecks</div>
+      <button class="btn btn-primary" onclick="openModal('modal-add-paycheck')">
+        + Log Paycheck
+      </button>
+      <div style="height:16px;"></div>
+      <div id="paycheck-list">
+        <div class="empty-state">
+          <div class="es-icon">💸</div>
+          <div class="es-text">No paychecks logged yet</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRANSACTIONS -->
+    <div class="view" id="view-transactions">
+      <div class="section-header">Add Transaction</div>
+      <div class="card">
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <input class="form-input" type="text" id="txn-desc" placeholder="e.g. Rent, Groceries…">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Amount</label>
+          <input class="form-input" type="number" id="txn-amount" placeholder="0.00" step="0.01">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Account</label>
+          <select class="form-select" id="txn-account">
+            <option value="checking">Checking</option>
+            <option value="savings">Savings</option>
+            <option value="temp">TEMP Card</option>
+            <option value="platinum">Platinum Card</option>
+            <option value="carloan">Car Loan</option>
+            <option value="joey">Joey Loan</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input class="form-input" type="date" id="txn-date">
+        </div>
+        <button class="btn btn-primary" onclick="addTransaction()">Save Transaction</button>
+      </div>
+
+      <!-- Quick Transfer -->
+      <div class="section-header">Quick Transfer</div>
+      <div class="card">
+        <div class="form-group">
+          <label class="form-label">From</label>
+          <select class="form-select" id="qt-from">
+            <option value="checking">Checking</option>
+            <option value="savings">Savings</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">To</label>
+          <select class="form-select" id="qt-to">
+            <option value="savings">Savings</option>
+            <option value="temp">TEMP Card</option>
+            <option value="platinum">Platinum Card</option>
+            <option value="carloan">Car Loan</option>
+            <option value="joey">Joey Loan</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Amount</label>
+          <input class="form-input" type="number" id="qt-amount" placeholder="0.00" step="0.01">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input class="form-input" type="date" id="qt-date">
+        </div>
+        <button class="btn btn-primary" onclick="doQuickTransfer()">Transfer</button>
+      </div>
+    </div>
+
+    <!-- LEDGERS -->
+    <div class="view" id="view-ledgers">
+      <div class="section-header">Ledgers</div>
+      <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:16px;">
+        <button class="btn btn-secondary btn-sm ledger-tab active" onclick="switchLedger('checking',this)">Checking</button>
+        <button class="btn btn-secondary btn-sm ledger-tab" onclick="switchLedger('savings',this)">Savings</button>
+        <button class="btn btn-secondary btn-sm ledger-tab" onclick="switchLedger('temp',this)">TEMP</button>
+        <button class="btn btn-secondary btn-sm ledger-tab" onclick="switchLedger('platinum',this)">Platinum</button>
+        <button class="btn btn-secondary btn-sm ledger-tab" onclick="switchLedger('carloan',this)">Car Loan</button>
+        <button class="btn btn-secondary btn-sm ledger-tab" onclick="switchLedger('joey',this)">Joey</button>
+      </div>
+      <div id="ledger-content">
+        <div class="empty-state">
+          <div class="es-icon">📒</div>
+          <div class="es-text">No transactions yet</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CREDIT SCORES -->
+    <div class="view" id="view-credit">
+      <div class="section-header">Credit Scores</div>
+      <button class="btn btn-primary" onclick="openModal('modal-log-score')" style="margin-bottom:16px;">
+        + Log Score
+      </button>
+
+      <!-- 3 score cards -->
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div class="score-circle" style="background:var(--lav-soft);">
+            <span class="sc-num" style="color:var(--lavender);" id="cr-tu-score">—</span>
+            <span class="sc-label" style="color:#8A70C0;">VS</span>
+          </div>
+          <div>
+            <div style="font-size:15px;font-weight:700;">TransUnion VantageScore</div>
+            <div style="font-size:12px;font-weight:600;color:var(--light);margin-top:3px;">Credit Karma</div>
+            <div style="font-size:11px;font-weight:600;color:var(--mid);margin-top:3px;" id="cr-tu-date">No entry yet</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div class="score-circle" style="background:var(--blush-soft);">
+            <span class="sc-num" style="color:var(--blush);" id="cr-eq-score">—</span>
+            <span class="sc-label" style="color:#C07090;">VS</span>
+          </div>
+          <div>
+            <div style="font-size:15px;font-weight:700;">Equifax VantageScore</div>
+            <div style="font-size:12px;font-weight:600;color:var(--light);margin-top:3px;">Credit Karma</div>
+            <div style="font-size:11px;font-weight:600;color:var(--mid);margin-top:3px;" id="cr-eq-date">No entry yet</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div class="score-circle" style="background:var(--sage-soft);">
+            <span class="sc-num" style="color:var(--sage);" id="cr-fico-score">—</span>
+            <span class="sc-label" style="color:#5A9A6A;">FICO</span>
+          </div>
+          <div>
+            <div style="font-size:15px;font-weight:700;">TransUnion FICO</div>
+            <div style="font-size:12px;font-weight:600;color:var(--light);margin-top:3px;">Capital One CreditWise</div>
+            <div style="font-size:11px;font-weight:600;color:var(--mid);margin-top:3px;" id="cr-fico-date">No entry yet</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Score log -->
+      <div class="section-header">History</div>
+      <div id="score-log-list">
+        <div class="empty-state">
+          <div class="es-icon">📈</div>
+          <div class="es-text">No scores logged yet</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="view" id="view-settings">
+      <div class="section-header">Profile</div>
+      <div class="card">
+        <div class="form-group">
+          <label class="form-label">Your Name</label>
+          <input class="form-input" type="text" id="set-name" placeholder="e.g. Jasmine" oninput="saveSetting('name',this.value)">
+        </div>
+      </div>
+
+      <div class="section-header">Pay Schedule</div>
+      <div class="card">
+        <div class="form-group">
+          <label class="form-label">Base Salary (annual)</label>
+          <input class="form-input" type="number" id="set-salary" placeholder="0.00" oninput="saveSetting('salary',this.value)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">401K Deduction (per paycheck)</label>
+          <input class="form-input" type="number" id="set-401k" placeholder="91.43" oninput="saveSetting('deduct401k',this.value)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Dental Deduction (per paycheck)</label>
+          <input class="form-input" type="number" id="set-dental" placeholder="3.54" oninput="saveSetting('deductDental',this.value)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">KMtchTr Deduction (per paycheck)</label>
+          <input class="form-input" type="number" id="set-kmtchtr" placeholder="54.86" oninput="saveSetting('deductKMtchTr',this.value)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">State</label>
+          <input class="form-input" type="text" id="set-state" value="Illinois" readonly style="opacity:0.6;">
+        </div>
+        <div class="form-group">
+          <label class="form-label">County</label>
+          <input class="form-input" type="text" id="set-county" value="Cook County" readonly style="opacity:0.6;">
+        </div>
+      </div>
+
+      <div class="section-header">TEMP Card Payoff</div>
+      <div class="card">
+        <div class="form-group">
+          <label class="form-label">TEMP Card Limit ($)</label>
+          <input class="form-input" type="number" id="set-temp-limit" placeholder="3351" oninput="saveSetting('tempLimit',this.value)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Payoff Target (months)</label>
+          <input class="form-input" type="number" id="set-temp-months" placeholder="18" oninput="saveSetting('tempPayoffMonths',this.value)">
+        </div>
+      </div>
+
+      <div class="section-header">Platinum Card</div>
+      <div class="card">
+        <div class="form-group">
+          <label class="form-label">Platinum Card Limit ($)</label>
+          <input class="form-input" type="number" id="set-platinum-limit" placeholder="500" oninput="saveSetting('platinumLimit',this.value)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Payment Due Day</label>
+          <input class="form-input" type="number" id="set-platinum-due" placeholder="1" min="1" max="31" oninput="saveSetting('platinumDueDay',this.value)">
+        </div>
+      </div>
+
+      <div class="section-header">Car Loan</div>
+      <div class="card">
+        <div class="form-group">
+          <label class="form-label">Original Loan Amount ($)</label>
+          <input class="form-input" type="number" id="set-carloan-orig" placeholder="0.00" oninput="saveSetting('carLoanOriginal',this.value)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Monthly Payment Target ($)</label>
+          <input class="form-input" type="number" id="set-carloan-target" placeholder="0.00" oninput="saveSetting('carLoanTarget',this.value)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Interest Rate (%)</label>
+          <input class="form-input" type="number" id="set-carloan-rate" placeholder="0" step="0.01" oninput="saveSetting('carLoanRate',this.value)">
+        </div>
+      </div>
+
+      <div class="section-header">Joey Loan</div>
+      <div class="card">
+        <div class="form-group">
+          <label class="form-label">Total Amount Owed ($)</label>
+          <input class="form-input" type="number" id="set-joey-orig" placeholder="2000" oninput="saveSetting('joeyLoanOriginal',this.value)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Monthly Payment Target ($)</label>
+          <input class="form-input" type="number" id="set-joey-target" placeholder="0.00" oninput="saveSetting('joeyLoanTarget',this.value)">
+        </div>
+      </div>
+
+      <div class="section-header">Credit Score Targets</div>
+      <div class="card">
+        <div class="form-group">
+          <label class="form-label">TransUnion VantageScore Target</label>
+          <input class="form-input" type="number" id="set-tu-target" placeholder="750" oninput="saveSetting('tuTarget',this.value)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Equifax VantageScore Target</label>
+          <input class="form-input" type="number" id="set-eq-target" placeholder="750" oninput="saveSetting('eqTarget',this.value)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">FICO Score Target</label>
+          <input class="form-input" type="number" id="set-fico-target" placeholder="750" oninput="saveSetting('ficoTarget',this.value)">
+        </div>
+      </div>
+
+      <div class="section-header">Fixed Expenses</div>
+      <div class="card" id="fixed-expenses-list">
+        <div class="empty-state" style="padding:20px 0;">
+          <div class="es-text">No fixed expenses added yet</div>
+        </div>
+      </div>
+      <button class="btn btn-secondary" onclick="openModal('modal-add-expense')" style="margin-bottom:14px;">
+        + Add Fixed Expense
+      </button>
+
+      <div class="section-header">Data & Backup</div>
+      <div class="card">
+        <p style="font-size:13px;font-weight:600;color:var(--mid);margin-bottom:16px;line-height:1.6;">
+          Your data is saved on this device. To back it up to iCloud:
+        </p>
+        <ol style="font-size:13px;font-weight:600;color:var(--mid);padding-left:20px;line-height:2;">
+          <li>Tap <strong>Export Data</strong> below</li>
+          <li>Tap <strong>Save to Files</strong></li>
+          <li>Choose <strong>iCloud Drive</strong> → Save</li>
+          <li>To restore: tap <strong>Import Data</strong> and select your file</li>
+        </ol>
+        <div style="display:flex;gap:10px;margin-top:16px;">
+          <button class="btn btn-secondary" onclick="exportData()" style="flex:1;">⬆ Export</button>
+          <button class="btn btn-secondary" onclick="document.getElementById('import-input').click()" style="flex:1;">⬇ Import</button>
+        </div>
+        <input type="file" id="import-input" accept=".json" style="display:none;" onchange="importData(event)">
+      </div>
+
+      <div style="height:20px;"></div>
+    </div>
+
+  </div><!-- /view-container -->
+
+  <!-- BOTTOM NAV -->
+  <nav id="bottom-nav">
+    <button class="nav-btn active" onclick="switchView('dashboard',this)">
+      <span class="nav-icon">🌸</span>
+      <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-btn" onclick="switchView('paychecks',this)">
+      <span class="nav-icon">💵</span>
+      <span class="nav-label">Pay</span>
+    </button>
+    <button class="nav-btn" onclick="switchView('transactions',this)">
+      <span class="nav-icon">✏️</span>
+      <span class="nav-label">Add</span>
+    </button>
+    <button class="nav-btn" onclick="switchView('ledgers',this)">
+      <span class="nav-icon">📒</span>
+      <span class="nav-label">Ledger</span>
+    </button>
+    <button class="nav-btn" onclick="switchView('credit',this)">
+      <span class="nav-icon">⭐</span>
+      <span class="nav-label">Credit</span>
+    </button>
+    <button class="nav-btn" onclick="switchView('settings',this)">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-label">Settings</span>
+    </button>
+  </nav>
+
+</div><!-- /app -->
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- MODAL: Add Paycheck -->
+<div class="modal-overlay" id="modal-add-paycheck" onclick="closeModalOutside(event,'modal-add-paycheck')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Log Paycheck</div>
+    <div class="form-group">
+      <label class="form-label">Pay Date</label>
+      <input class="form-input" type="date" id="pc-date">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Gross Pay ($)</label>
+      <input class="form-input" type="number" id="pc-gross" placeholder="0.00" step="0.01" oninput="updatePaycheckNet()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Bonus ($)</label>
+      <input class="form-input" type="number" id="pc-bonus" placeholder="0.00" step="0.01" oninput="updatePaycheckNet()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Federal Tax ($)</label>
+      <input class="form-input" type="number" id="pc-fed" placeholder="0.00" step="0.01" oninput="updatePaycheckNet()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">State Tax ($)</label>
+      <input class="form-input" type="number" id="pc-state" placeholder="0.00" step="0.01" oninput="updatePaycheckNet()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Social Security ($)</label>
+      <input class="form-input" type="number" id="pc-ss" placeholder="0.00" step="0.01" oninput="updatePaycheckNet()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Medicare ($)</label>
+      <input class="form-input" type="number" id="pc-medicare" placeholder="0.00" step="0.01" oninput="updatePaycheckNet()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">401K ($)</label>
+      <input class="form-input" type="number" id="pc-401k" placeholder="91.43" step="0.01" oninput="updatePaycheckNet()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Dental ($)</label>
+      <input class="form-input" type="number" id="pc-dental" placeholder="3.54" step="0.01" oninput="updatePaycheckNet()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">KMtchTr ($)</label>
+      <input class="form-input" type="number" id="pc-kmtchtr" placeholder="54.86" step="0.01" oninput="updatePaycheckNet()">
+    </div>
+    <!-- Net summary -->
+    <div style="background:var(--cream);border-radius:var(--radius-md);padding:14px;margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;font-weight:700;color:var(--mid);">Estimated Net Pay</span>
+        <span style="font-family:var(--font-display);font-size:24px;font-weight:700;color:#6BAF7A;" id="pc-net-display">$0.00</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Status</label>
+      <select class="form-select" id="pc-status">
+        <option value="approved">Approved (received)</option>
+        <option value="predicted">Predicted</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="savePaycheck()">Save Paycheck</button>
+    <div style="height:10px;"></div>
+    <button class="btn btn-secondary" onclick="closeModal('modal-add-paycheck')">Cancel</button>
+  </div>
+</div>
+
+<!-- MODAL: Log Credit Score -->
+<div class="modal-overlay" id="modal-log-score" onclick="closeModalOutside(event,'modal-log-score')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Log Credit Score</div>
+    <div class="form-group">
+      <label class="form-label">Source</label>
+      <select class="form-select" id="score-source">
+        <option value="tu">TransUnion VantageScore (Credit Karma)</option>
+        <option value="eq">Equifax VantageScore (Credit Karma)</option>
+        <option value="fico">TransUnion FICO (CreditWise)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Score</label>
+      <input class="form-input" type="number" id="score-value" placeholder="750" min="300" max="850">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Date</label>
+      <input class="form-input" type="date" id="score-date">
+    </div>
+    <button class="btn btn-primary" onclick="saveScore()">Save Score</button>
+    <div style="height:10px;"></div>
+    <button class="btn btn-secondary" onclick="closeModal('modal-log-score')">Cancel</button>
+  </div>
+</div>
+
+<!-- MODAL: Add Fixed Expense -->
+<div class="modal-overlay" id="modal-add-expense" onclick="closeModalOutside(event,'modal-add-expense')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Fixed Expense</div>
+    <div class="form-group">
+      <label class="form-label">Name</label>
+      <input class="form-input" type="text" id="exp-name" placeholder="e.g. Rent, Netflix…">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Amount ($)</label>
+      <input class="form-input" type="number" id="exp-amount" placeholder="0.00" step="0.01">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Due Day of Month</label>
+      <input class="form-input" type="number" id="exp-due" placeholder="1" min="1" max="31">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Account</label>
+      <select class="form-select" id="exp-account">
+        <option value="checking">Checking</option>
+        <option value="savings">Savings</option>
+        <option value="temp">TEMP Card</option>
+        <option value="platinum">Platinum Card</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="saveFixedExpense()">Save Expense</button>
+    <div style="height:10px;"></div>
+    <button class="btn btn-secondary" onclick="closeModal('modal-add-expense')">Cancel</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════
+
+const DEFAULT_DATA = {
+  accounts: {
+    checking: 0,
+    savings: 0,
+    temp: 0,
+    platinum: 0,
+    carloan: 0,
+    joey: 0
+  },
+  transactions: [],
+  paychecks: [],
+  fixedExpenses: [],
+  creditScores: [],
+  settings: {
+    name: '',
+    salary: 0,
+    deduct401k: 91.43,
+    deductDental: 3.54,
+    deductKMtchTr: 54.86,
+    tempLimit: 3351,
+    tempPayoffMonths: 18,
+    tempOriginalDebt: 3260.30,
+    platinumLimit: 500,
+    platinumDueDay: 1,
+    carLoanOriginal: 0,
+    carLoanTarget: 0,
+    carLoanRate: 0,
+    joeyLoanOriginal: 2000,
+    joeyLoanTarget: 0,
+    tuTarget: 750,
+    eqTarget: 750,
+    ficoTarget: 750
+  }
+};
+
+let App = { data: JSON.parse(JSON.stringify(DEFAULT_DATA)) };
+
+function mergeWithDefaults(saved) {
+  const d = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  if (!saved) return d;
+  d.transactions   = saved.transactions   || [];
+  d.paychecks      = saved.paychecks      || [];
+  d.fixedExpenses  = saved.fixedExpenses  || [];
+  d.creditScores   = saved.creditScores   || [];
+  d.settings = Object.assign({}, d.settings, saved.settings || {});
+  // Rebuild balances from transactions
+  d.accounts = { checking:0, savings:0, temp:0, platinum:0, carloan:0, joey:0 };
+  for (const t of d.transactions) {
+    if (d.accounts[t.account] !== undefined) {
+      d.accounts[t.account] += t.amount;
+    }
+  }
+  return d;
+}
+
+function saveData() {
+  try {
+    localStorage.setItem('bloom-data', JSON.stringify(App.data));
+    showToast('Saved ✓');
+  } catch(e) {
+    showToast('Save failed');
+  }
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem('bloom-data');
+    if (raw) App.data = mergeWithDefaults(JSON.parse(raw));
+  } catch(e) {
+    App.data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════
+
+function switchView(name, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'paychecks') renderPaychecks();
+  if (name === 'ledgers')   renderLedger('checking');
+  if (name === 'credit')    renderCreditScores();
+  if (name === 'settings')  renderSettings();
+  document.getElementById('view-container').scrollTop = 0;
+}
+
+// ═══════════════════════════════════════════════════════
+// MODALS
+// ═══════════════════════════════════════════════════════
+
+function openModal(id) {
+  const today = new Date().toISOString().split('T')[0];
+  if (id === 'modal-add-paycheck') {
+    document.getElementById('pc-date').value = today;
+    document.getElementById('pc-gross').value = '';
+    document.getElementById('pc-bonus').value = '';
+    prefillPaycheckDeductions();
+    updatePaycheckNet();
+  }
+  if (id === 'modal-log-score') {
+    document.getElementById('score-date').value = today;
+    document.getElementById('score-value').value = '';
+  }
+  if (id === 'modal-add-expense') {
+    document.getElementById('exp-name').value = '';
+    document.getElementById('exp-amount').value = '';
+    document.getElementById('exp-due').value = '';
+  }
+  if (id === 'modal-add-paycheck') {
+    document.getElementById('qt-date') && (document.getElementById('qt-date').value = today);
+  }
+  document.getElementById(id).classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function closeModalOutside(e, id) {
+  if (e.target.id === id) closeModal(id);
+}
+
+// ═══════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ═══════════════════════════════════════════════════════
+// FORMATTING
+// ═══════════════════════════════════════════════════════
+
+function fmt(n) {
+  return '$' + Math.abs(n).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function fmtSigned(n) {
+  return (n < 0 ? '-' : '') + fmt(n);
+}
+
+function fmtDate(str) {
+  if (!str) return '—';
+  const d = new Date(str + 'T12:00:00');
+  return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+}
+
+// ═══════════════════════════════════════════════════════
+// PAY DATE PREDICTOR
+// ═══════════════════════════════════════════════════════
+
+function isBusinessDay(date) {
+  const d = date.getDay();
+  return d !== 0 && d !== 6;
+}
+
+function nearestBusinessDay(year, month, day) {
+  let d = new Date(year, month - 1, day);
+  if (isBusinessDay(d)) return d;
+  // Try next days first, then prev
+  let fwd = new Date(d), bwd = new Date(d);
+  for (let i = 1; i <= 3; i++) {
+    fwd.setDate(fwd.getDate() + 1);
+    if (isBusinessDay(fwd)) return fwd;
+    bwd.setDate(bwd.getDate() - 1);
+    if (isBusinessDay(bwd)) return bwd;
+  }
+  return d;
+}
+
+function nextPayDate() {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const year  = today.getFullYear();
+  const month = today.getMonth() + 1;
+
+  const candidates = [];
+  for (let m = month; m <= month + 2; m++) {
+    const y = m > 12 ? year + 1 : year;
+    const mm = m > 12 ? m - 12 : m;
+    candidates.push(nearestBusinessDay(y, mm, 5));
+    candidates.push(nearestBusinessDay(y, mm, 21));
+  }
+
+  const future = candidates
+    .filter(d => d >= today)
+    .sort((a,b) => a - b);
+
+  return future[0] || null;
+}
+
+function daysUntil(date) {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const diff = Math.round((date - today) / 86400000);
+  if (diff === 0) return 'Today!';
+  if (diff === 1) return 'Tomorrow';
+  return `In ${diff} days`;
+}
+
+// ═══════════════════════════════════════════════════════
+// LAST NET PAY
+// ═══════════════════════════════════════════════════════
+
+function lastApprovedNet() {
+  const approved = App.data.paychecks
+    .filter(p => p.status === 'approved')
+    .sort((a,b) => b.date.localeCompare(a.date));
+  return approved.length ? approved[0].net : null;
+}
+
+// ═══════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════
+
+function renderDashboard() {
+  const acct = App.data.accounts;
+  const set  = App.data.settings;
+
+  // Balances
+  document.getElementById('db-checking').textContent  = fmt(acct.checking);
+  document.getElementById('db-savings').textContent   = fmt(acct.savings);
+  document.getElementById('db-temp').textContent      = fmt(acct.temp);
+  document.getElementById('db-platinum').textContent  = fmt(acct.platinum);
+  document.getElementById('db-carloan').textContent   = fmt(acct.carloan);
+  document.getElementById('db-joey').textContent      = fmt(acct.joey);
+
+  // Sublabels for loans
+  const carPct = set.carLoanOriginal > 0
+    ? Math.min(100, Math.round((1 - acct.carloan / set.carLoanOriginal) * 100))
+    : 0;
+  document.getElementById('db-carloan-sub').textContent = set.carLoanOriginal > 0
+    ? `${carPct}% paid off` : 'Set up in Settings';
+
+  const joeyPct = set.joeyLoanOriginal > 0
+    ? Math.min(100, Math.round((1 - acct.joey / set.joeyLoanOriginal) * 100))
+    : 0;
+  document.getElementById('db-joey-sub').textContent = set.joeyLoanOriginal > 0
+    ? `${joeyPct}% paid off` : 'Set up in Settings';
+
+  // TEMP payoff progress
+  const tempOrig   = set.tempOriginalDebt || 3260.30;
+  const tempPaid   = Math.max(0, tempOrig - Math.abs(acct.temp));
+  const tempPct    = Math.min(100, (tempPaid / tempOrig) * 100);
+  const monthsLeft = set.tempPayoffMonths || 18;
+  const suggested  = Math.ceil((tempOrig - tempPaid) / monthsLeft);
+
+  document.getElementById('temp-paid-label').textContent = fmt(tempPaid) + ' paid off';
+  document.getElementById('temp-months-left').textContent = monthsLeft + ' mo goal';
+  document.getElementById('temp-progress-bar').style.width = tempPct.toFixed(1) + '%';
+  document.getElementById('temp-suggestion').textContent =
+    'Suggested monthly payment: ' + fmt(suggested);
+
+  // Alerts
+  renderAlerts();
+
+  // Upcoming bills (7 days)
+  renderUpcomingBills();
+
+  // Next paycheck
+  const nextPay = nextPayDate();
+  if (nextPay) {
+    document.getElementById('next-pay-date').textContent = fmtDate(nextPay.toISOString().split('T')[0]);
+    document.getElementById('next-pay-days').textContent = daysUntil(nextPay);
+    const lastNet = lastApprovedNet();
+    document.getElementById('next-pay-amount').textContent = lastNet ? fmt(lastNet) : '—';
+  }
+
+  // Credit scores
+  renderDashboardScores();
+}
+
+function renderAlerts() {
+  const container = document.getElementById('alerts-container');
+  container.innerHTML = '';
+  const acct = App.data.accounts;
+  const set  = App.data.settings;
+  const alerts = [];
+
+  if (Math.abs(acct.temp) > 0) {
+    alerts.push({ type:'warning', icon:'💳', text:`TEMP Card has ${fmt(Math.abs(acct.temp))} remaining to pay off` });
+  }
+  if (Math.abs(acct.platinum) > 50) {
+    alerts.push({ type:'warning', icon:'💳', text:`Platinum Card balance: ${fmt(Math.abs(acct.platinum))}` });
+  }
+  if (acct.checking < 200) {
+    alerts.push({ type:'danger', icon:'⚠️', text:'Checking balance is low!' });
+  }
+
+  alerts.forEach(a => {
+    const div = document.createElement('div');
+    div.className = `alert-banner ${a.type}`;
+    div.innerHTML = `<span class="alert-icon">${a.icon}</span><span>${a.text}</span>`;
+    container.appendChild(div);
+  });
+}
+
+function renderUpcomingBills() {
+  const container = document.getElementById('upcoming-bills-container');
+  container.innerHTML = '';
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const in7  = new Date(today); in7.setDate(today.getDate() + 7);
+  const in30 = new Date(today); in30.setDate(today.getDate() + 30);
+
+  const expenses = App.data.fixedExpenses || [];
+  const upcoming7  = [];
+  const upcoming30 = [];
+
+  expenses.forEach(exp => {
+    const dueDay = exp.dueDay;
+    // Check this month and next
+    for (let offset = 0; offset <= 1; offset++) {
+      const checkDate = new Date(today.getFullYear(), today.getMonth() + offset, dueDay);
+      if (checkDate >= today && checkDate <= in30) {
+        const obj = { ...exp, dueDate: checkDate };
+        if (checkDate <= in7) upcoming7.push(obj);
+        else upcoming30.push(obj);
+      }
+    }
+  });
+
+  if (upcoming7.length === 0 && upcoming30.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="es-icon">📋</div><div class="es-text">No bills due soon</div></div>`;
+    return;
+  }
+
+  if (upcoming7.length > 0) {
+    const hdr = document.createElement('div');
+    hdr.className = 'section-header';
+    hdr.style.marginTop = '0';
+    hdr.textContent = 'Next 7 days';
+    container.appendChild(hdr);
+    upcoming7.sort((a,b) => a.dueDate - b.dueDate).forEach(exp => {
+      container.appendChild(makeBillRow(exp, true));
+    });
+  }
+
+  if (upcoming30.length > 0) {
+    const hdr = document.createElement('div');
+    hdr.className = 'section-header';
+    hdr.textContent = 'Next 30 days';
+    container.appendChild(hdr);
+    upcoming30.sort((a,b) => a.dueDate - b.dueDate).forEach(exp => {
+      container.appendChild(makeBillRow(exp, false));
+    });
+  }
+}
+
+function makeBillRow(exp, urgent) {
+  const div = document.createElement('div');
+  div.className = `alert-banner ${urgent ? 'danger' : 'warning'}`;
+  div.innerHTML = `
+    <span class="alert-icon">📅</span>
+    <div style="flex:1;">
+      <div style="font-weight:700;">${exp.name}</div>
+      <div style="font-size:11px;margin-top:2px;">${fmtDate(exp.dueDate.toISOString().split('T')[0])} · ${exp.account}</div>
+    </div>
+    <div style="font-family:var(--font-display);font-size:16px;font-weight:700;">${fmt(exp.amount)}</div>
+  `;
+  return div;
+}
+
+function renderDashboardScores() {
+  const scores = App.data.creditScores || [];
+  const latest = (type) => {
+    const filtered = scores.filter(s => s.type === type).sort((a,b) => b.date.localeCompare(a.date));
+    return filtered[0] || null;
+  };
+
+  const tu = latest('tu');
+  const eq = latest('eq');
+
+  document.getElementById('db-tu-score').textContent = tu ? tu.score : '—';
+  document.getElementById('db-tu-date').textContent  = tu ? fmtDate(tu.date) : 'No entry yet';
+  document.getElementById('db-eq-score').textContent = eq ? eq.score : '—';
+  document.getElementById('db-eq-date').textContent  = eq ? fmtDate(eq.date) : 'No entry yet';
+}
+
+// ═══════════════════════════════════════════════════════
+// PAYCHECKS
+// ═══════════════════════════════════════════════════════
+
+function prefillPaycheckDeductions() {
+  const set = App.data.settings;
+  // Auto-fill from average of approved paychecks, or fall back to settings
+  const approved = App.data.paychecks.filter(p => p.status === 'approved');
+  if (approved.length > 0) {
+    const avg = (field) => approved.reduce((s,p) => s + (p[field]||0), 0) / approved.length;
+    document.getElementById('pc-fed').value     = avg('fedTax').toFixed(2);
+    document.getElementById('pc-state').value   = avg('stateTax').toFixed(2);
+    document.getElementById('pc-ss').value      = avg('ssTax').toFixed(2);
+    document.getElementById('pc-medicare').value = avg('medicareTax').toFixed(2);
+    document.getElementById('pc-401k').value    = avg('deduct401k').toFixed(2);
+    document.getElementById('pc-dental').value  = avg('deductDental').toFixed(2);
+    document.getElementById('pc-kmtchtr').value = avg('deductKMtchTr').toFixed(2);
+  } else {
+    document.getElementById('pc-fed').value      = '';
+    document.getElementById('pc-state').value    = '';
+    document.getElementById('pc-ss').value       = '';
+    document.getElementById('pc-medicare').value = '';
+    document.getElementById('pc-401k').value     = set.deduct401k || 91.43;
+    document.getElementById('pc-dental').value   = set.deductDental || 3.54;
+    document.getElementById('pc-kmtchtr').value  = set.deductKMtchTr || 54.86;
+  }
+}
+
+function updatePaycheckNet() {
+  const gross    = parseFloat(document.getElementById('pc-gross').value)    || 0;
+  const bonus    = parseFloat(document.getElementById('pc-bonus').value)    || 0;
+  const fed      = parseFloat(document.getElementById('pc-fed').value)      || 0;
+  const state    = parseFloat(document.getElementById('pc-state').value)    || 0;
+  const ss       = parseFloat(document.getElementById('pc-ss').value)       || 0;
+  const medicare = parseFloat(document.getElementById('pc-medicare').value) || 0;
+  const k401     = parseFloat(document.getElementById('pc-401k').value)     || 0;
+  const dental   = parseFloat(document.getElementById('pc-dental').value)   || 0;
+  const kmtchtr  = parseFloat(document.getElementById('pc-kmtchtr').value)  || 0;
+  const net = gross + bonus - fed - state - ss - medicare - k401 - dental - kmtchtr;
+  document.getElementById('pc-net-display').textContent = fmt(Math.max(0, net));
+}
+
+function savePaycheck() {
+  const date = document.getElementById('pc-date').value;
+  const gross = parseFloat(document.getElementById('pc-gross').value) || 0;
+  if (!date || gross <= 0) { showToast('Enter a date and gross pay'); return; }
+
+  const bonus    = parseFloat(document.getElementById('pc-bonus').value)    || 0;
+  const fed      = parseFloat(document.getElementById('pc-fed').value)      || 0;
+  const state    = parseFloat(document.getElementById('pc-state').value)    || 0;
+  const ss       = parseFloat(document.getElementById('pc-ss').value)       || 0;
+  const medicare = parseFloat(document.getElementById('pc-medicare').value) || 0;
+  const k401     = parseFloat(document.getElementById('pc-401k').value)     || 0;
+  const dental   = parseFloat(document.getElementById('pc-dental').value)   || 0;
+  const kmtchtr  = parseFloat(document.getElementById('pc-kmtchtr').value)  || 0;
+  const net = gross + bonus - fed - state - ss - medicare - k401 - dental - kmtchtr;
+
+  const pc = {
+    id: Date.now(),
+    date, gross, bonus, fedTax: fed, stateTax: state, ssTax: ss,
+    medicareTax: medicare, deduct401k: k401, deductDental: dental,
+    deductKMtchTr: kmtchtr, net: Math.max(0, net),
+    status: document.getElementById('pc-status').value
+  };
+
+  App.data.paychecks.unshift(pc);
+  saveData();
+  closeModal('modal-add-paycheck');
+  renderPaychecks();
+  showToast('Paycheck saved!');
+}
+
+function renderPaychecks() {
+  const container = document.getElementById('paycheck-list');
+  container.innerHTML = '';
+  const list = [...App.data.paychecks].sort((a,b) => b.date.localeCompare(a.date));
+
+  if (list.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="es-icon">💸</div><div class="es-text">No paychecks logged yet</div></div>`;
+    return;
+  }
+
+  list.forEach(pc => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.marginBottom = '12px';
+    const statusPill = pc.status === 'approved'
+      ? `<span class="pill pill-sage">✓ Received</span>`
+      : `<span class="pill pill-lav">Predicted</span>`;
+    card.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-size:14px;font-weight:700;">${fmtDate(pc.date)}</div>
+        ${statusPill}
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+        <span style="font-size:12px;color:var(--light);font-weight:600;">Gross${pc.bonus > 0 ? ' + Bonus' : ''}</span>
+        <span style="font-size:13px;font-weight:700;">${fmt(pc.gross)}${pc.bonus > 0 ? ' + '+fmt(pc.bonus) : ''}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+        <span style="font-size:12px;color:var(--light);font-weight:600;">Net Pay</span>
+        <span style="font-family:var(--font-display);font-size:20px;font-weight:700;color:#6BAF7A;">${fmt(pc.net)}</span>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="deletePaycheck(${pc.id})" style="color:var(--danger);">Delete</button>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function deletePaycheck(id) {
+  App.data.paychecks = App.data.paychecks.filter(p => p.id !== id);
+  saveData();
+  renderPaychecks();
+}
+
+// ═══════════════════════════════════════════════════════
+// TRANSACTIONS
+// ═══════════════════════════════════════════════════════
+
+function addTransaction() {
+  const desc    = document.getElementById('txn-desc').value.trim();
+  const amount  = parseFloat(document.getElementById('txn-amount').value);
+  const account = document.getElementById('txn-account').value;
+  const date    = document.getElementById('txn-date').value;
+
+  if (!desc || isNaN(amount) || !date) { showToast('Fill in all fields'); return; }
+
+  const txn = { id: Date.now(), desc, amount, account, date };
+  App.data.transactions.push(txn);
+  App.data.accounts[account] = (App.data.accounts[account] || 0) + amount;
+  saveData();
+
+  document.getElementById('txn-desc').value   = '';
+  document.getElementById('txn-amount').value = '';
+  showToast('Transaction saved!');
+}
+
+function doQuickTransfer() {
+  const from   = document.getElementById('qt-from').value;
+  const to     = document.getElementById('qt-to').value;
+  const amount = parseFloat(document.getElementById('qt-amount').value);
+  const date   = document.getElementById('qt-date').value;
+
+  if (isNaN(amount) || amount <= 0 || !date) { showToast('Fill in all fields'); return; }
+
+  const isPayingCC = (to === 'temp' || to === 'platinum');
+  const toAmount   = isPayingCC ? -amount : amount;
+
+  App.data.transactions.push({ id: Date.now(),     desc: `Transfer to ${to}`,   amount: -amount,  account: from, date });
+  App.data.transactions.push({ id: Date.now() + 1, desc: `Transfer from ${from}`, amount: toAmount, account: to,   date });
+
+  App.data.accounts[from] -= amount;
+  App.data.accounts[to]   += toAmount;
+
+  saveData();
+  document.getElementById('qt-amount').value = '';
+  showToast('Transfer saved!');
+}
+
+// ═══════════════════════════════════════════════════════
+// LEDGERS
+// ═══════════════════════════════════════════════════════
+
+let currentLedgerAccount = 'checking';
+
+function switchLedger(account, btn) {
+  currentLedgerAccount = account;
+  document.querySelectorAll('.ledger-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderLedger(account);
+}
+
+function renderLedger(account) {
+  const container = document.getElementById('ledger-content');
+  container.innerHTML = '';
+  const txns = App.data.transactions
+    .filter(t => t.account === account)
+    .sort((a,b) => b.date.localeCompare(a.date));
+
+  if (txns.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="es-icon">📒</div><div class="es-text">No transactions yet</div></div>`;
+    return;
+  }
+
+  txns.forEach(t => {
+    const row = document.createElement('div');
+    row.className = 'txn-row';
+    row.innerHTML = `
+      <div>
+        <div class="tr-desc">${t.desc}</div>
+        <div class="tr-meta">${fmtDate(t.date)}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="tr-amount ${t.amount >= 0 ? 'pos' : 'neg'}">${t.amount >= 0 ? '+' : ''}${fmt(t.amount)}</span>
+        <button onclick="deleteTxn(${t.id})" style="background:none;border:none;color:var(--light);font-size:16px;cursor:pointer;padding:4px;">×</button>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+let pendingDeleteTxnId = null;
+
+function deleteTxn(id) {
+  const txn = App.data.transactions.find(t => t.id === id);
+  if (!txn) return;
+
+  // Inline confirm
+  if (pendingDeleteTxnId === id) {
+    App.data.transactions = App.data.transactions.filter(t => t.id !== id);
+    App.data.accounts[txn.account] -= txn.amount;
+    saveData();
+    renderLedger(currentLedgerAccount);
+    pendingDeleteTxnId = null;
+    showToast('Deleted');
+  } else {
+    pendingDeleteTxnId = id;
+    showToast('Tap × again to confirm delete');
+    setTimeout(() => { pendingDeleteTxnId = null; }, 3000);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// CREDIT SCORES
+// ═══════════════════════════════════════════════════════
+
+function saveScore() {
+  const source = document.getElementById('score-source').value;
+  const score  = parseInt(document.getElementById('score-value').value);
+  const date   = document.getElementById('score-date').value;
+  if (!score || score < 300 || score > 850 || !date) { showToast('Enter a valid score (300–850)'); return; }
+
+  App.data.creditScores.push({ id: Date.now(), type: source, score, date });
+  saveData();
+  closeModal('modal-log-score');
+  renderCreditScores();
+  renderDashboardScores();
+  showToast('Score saved!');
+}
+
+function renderCreditScores() {
+  const scores = App.data.creditScores || [];
+  const latest = (type) => scores.filter(s => s.type === type).sort((a,b) => b.date.localeCompare(a.date))[0] || null;
+
+  const tu   = latest('tu');
+  const eq   = latest('eq');
+  const fico = latest('fico');
+
+  document.getElementById('cr-tu-score').textContent    = tu   ? tu.score   : '—';
+  document.getElementById('cr-tu-date').textContent     = tu   ? fmtDate(tu.date)   : 'No entry yet';
+  document.getElementById('cr-eq-score').textContent    = eq   ? eq.score   : '—';
+  document.getElementById('cr-eq-date').textContent     = eq   ? fmtDate(eq.date)   : 'No entry yet';
+  document.getElementById('cr-fico-score').textContent  = fico ? fico.score : '—';
+  document.getElementById('cr-fico-date').textContent   = fico ? fmtDate(fico.date) : 'No entry yet';
+
+  // History log
+  const container = document.getElementById('score-log-list');
+  container.innerHTML = '';
+  const sorted = [...scores].sort((a,b) => b.date.localeCompare(a.date));
+  if (sorted.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="es-icon">📈</div><div class="es-text">No scores logged yet</div></div>`;
+    return;
+  }
+
+  const labelMap = { tu:'TransUnion VS', eq:'Equifax VS', fico:'FICO' };
+  const pillMap  = { tu:'pill-lav', eq:'pill-blush', fico:'pill-sage' };
+
+  sorted.forEach(s => {
+    const row = document.createElement('div');
+    row.className = 'txn-row';
+    row.innerHTML = `
+      <div>
+        <div class="tr-desc">${labelMap[s.type] || s.type}</div>
+        <div class="tr-meta">${fmtDate(s.date)}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="pill ${pillMap[s.type] || 'pill-lav'}">${s.score}</span>
+        <button onclick="deleteScore(${s.id})" style="background:none;border:none;color:var(--light);font-size:16px;cursor:pointer;padding:4px;">×</button>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function deleteScore(id) {
+  App.data.creditScores = App.data.creditScores.filter(s => s.id !== id);
+  saveData();
+  renderCreditScores();
+}
+
+// ═══════════════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════════════
+
+function saveSetting(key, value) {
+  App.data.settings[key] = isNaN(parseFloat(value)) || value === '' ? value : parseFloat(value);
+  saveData();
+}
+
+function renderSettings() {
+  const set = App.data.settings;
+  const fields = {
+    'set-name':           set.name,
+    'set-salary':         set.salary || '',
+    'set-401k':           set.deduct401k,
+    'set-dental':         set.deductDental,
+    'set-kmtchtr':        set.deductKMtchTr,
+    'set-temp-limit':     set.tempLimit,
+    'set-temp-months':    set.tempPayoffMonths,
+    'set-platinum-limit': set.platinumLimit,
+    'set-platinum-due':   set.platinumDueDay,
+    'set-carloan-orig':   set.carLoanOriginal || '',
+    'set-carloan-target': set.carLoanTarget   || '',
+    'set-carloan-rate':   set.carLoanRate     || '',
+    'set-joey-orig':      set.joeyLoanOriginal,
+    'set-joey-target':    set.joeyLoanTarget  || '',
+    'set-tu-target':      set.tuTarget,
+    'set-eq-target':      set.eqTarget,
+    'set-fico-target':    set.ficoTarget
+  };
+  Object.entries(fields).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el && val !== '' && val !== null && val !== undefined) el.value = val;
+  });
+
+  renderFixedExpensesList();
+}
+
+function renderFixedExpensesList() {
+  const container = document.getElementById('fixed-expenses-list');
+  container.innerHTML = '';
+  const list = App.data.fixedExpenses || [];
+
+  if (list.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="padding:20px 0;"><div class="es-text">No fixed expenses added yet</div></div>`;
+    return;
+  }
+
+  list.forEach((exp, i) => {
+    const row = document.createElement('div');
+    row.className = 'settings-row';
+    row.innerHTML = `
+      <div>
+        <div class="sr-label">${exp.name}</div>
+        <div class="sr-sub">Due day ${exp.dueDay} · ${exp.account}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="sr-value">${fmt(exp.amount)}</span>
+        <button onclick="deleteExpense(${i})" style="background:none;border:none;color:var(--light);font-size:16px;cursor:pointer;">×</button>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function saveFixedExpense() {
+  const name    = document.getElementById('exp-name').value.trim();
+  const amount  = parseFloat(document.getElementById('exp-amount').value);
+  const dueDay  = parseInt(document.getElementById('exp-due').value);
+  const account = document.getElementById('exp-account').value;
+
+  if (!name || isNaN(amount) || isNaN(dueDay)) { showToast('Fill in all fields'); return; }
+
+  App.data.fixedExpenses.push({ name, amount, dueDay, account });
+  saveData();
+  closeModal('modal-add-expense');
+  renderFixedExpensesList();
+  showToast('Expense saved!');
+}
+
+function deleteExpense(index) {
+  App.data.fixedExpenses.splice(index, 1);
+  saveData();
+  renderFixedExpensesList();
+}
+
+// ═══════════════════════════════════════════════════════
+// EXPORT / IMPORT
+// ═══════════════════════════════════════════════════════
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(App.data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = 'bloom-backup.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Export ready — save to iCloud!');
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      App.data = mergeWithDefaults(parsed);
+      saveData();
+      renderDashboard();
+      renderSettings();
+      showToast('Data imported!');
+    } catch {
+      showToast('Invalid file');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+
+function init() {
+  // Set today's date in all date fields
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('txn-date').value = today;
+  document.getElementById('qt-date').value  = today;
+
+  // Header date
+  document.getElementById('header-date').textContent = new Date().toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric'
+  });
+
+  loadData();
+  renderDashboard();
+}
+
+init();
+</script>
+</body>
+</html>
