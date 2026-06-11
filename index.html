@@ -951,6 +951,29 @@ html, body {
         + Add Fixed Expense
       </button>
 
+      <div class="section-header">Manual Balance Correction</div>
+      <div class="card">
+        <p style="font-size:13px;font-weight:600;color:var(--mid);margin-bottom:16px;line-height:1.6;">
+          Use this if your balances look wrong. Enter the correct current balance for any account and tap Save.
+        </p>
+        <div class="form-group">
+          <label class="form-label">Account</label>
+          <select class="form-select" id="fix-account">
+            <option value="checking">Checking</option>
+            <option value="savings">Savings</option>
+            <option value="temp">TEMP Card</option>
+            <option value="platinum">Platinum Card</option>
+            <option value="carloan">Car Loan</option>
+            <option value="joey">Joey Loan</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Correct Balance ($)</label>
+          <input class="form-input" type="number" id="fix-balance" placeholder="0.00" step="0.01">
+        </div>
+        <button class="btn btn-primary" onclick="saveBalanceCorrection()">Save Correction</button>
+      </div>
+
       <div class="section-header">Data & Backup</div>
       <div class="card">
         <p style="font-size:13px;font-weight:600;color:var(--mid);margin-bottom:16px;line-height:1.6;">
@@ -1929,6 +1952,30 @@ function deleteExpense(index) {
 // ═══════════════════════════════════════════════════════
 // EXPORT / IMPORT
 // ═══════════════════════════════════════════════════════
+
+function saveBalanceCorrection() {
+  const account = document.getElementById('fix-account').value;
+  const correct = parseFloat(document.getElementById('fix-balance').value);
+  if (isNaN(correct)) { showToast('Enter a valid balance'); return; }
+
+  const current = App.data.accounts[account] || 0;
+  const diff = correct - current;
+  if (diff === 0) { showToast('Balance is already correct'); return; }
+
+  const today = new Date().toISOString().split('T')[0];
+  const txn = {
+    id: Date.now(),
+    desc: 'Manual Balance Correction',
+    amount: diff,
+    account: account,
+    date: today
+  };
+  App.data.transactions.push(txn);
+  App.data.accounts[account] = correct;
+  saveData();
+  document.getElementById('fix-balance').value = '';
+  showToast('Balance corrected!');
+}
 
 function exportData() {
   const blob = new Blob([JSON.stringify(App.data, null, 2)], { type: 'application/json' });
