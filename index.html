@@ -1527,26 +1527,54 @@ function renderDashboardScores() {
 
 function prefillPaycheckDeductions() {
   const set = App.data.settings;
-  // Auto-fill from average of approved paychecks, or fall back to settings
-  const approved = App.data.paychecks.filter(p => p.status === 'approved');
+  const salary = parseFloat(set.salary) || 0;
+  const grossPerPaycheck = salary > 0 ? (salary / 24) : 0;
+
+  // Set gross from salary
+  if (grossPerPaycheck > 0) {
+    document.getElementById('pc-gross').value = grossPerPaycheck.toFixed(2);
+  }
+
+  // Get approved paychecks from same year first, then all-time
+  const today = new Date();
+  const sameYear = App.data.paychecks.filter(p =>
+    p.status === 'approved' && new Date(p.date).getFullYear() === today.getFullYear()
+  );
+  const allApproved = App.data.paychecks.filter(p => p.status === 'approved');
+  const approved = sameYear.length > 0 ? sameYear : allApproved;
+
   if (approved.length > 0) {
+    // Use average rates from approved paychecks
     const avg = (field) => approved.reduce((s,p) => s + (p[field]||0), 0) / approved.length;
-    document.getElementById('pc-fed').value     = avg('fedTax').toFixed(2);
-    document.getElementById('pc-state').value   = avg('stateTax').toFixed(2);
-    document.getElementById('pc-ss').value      = avg('ssTax').toFixed(2);
-    document.getElementById('pc-medicare').value = avg('medicareTax').toFixed(2);
-    document.getElementById('pc-401k').value    = avg('deduct401k').toFixed(2);
-    document.getElementById('pc-dental').value  = avg('deductDental').toFixed(2);
-    document.getElementById('pc-kmtchtr').value = avg('deductKMtchTr').toFixed(2);
+    const avgGross = approved.reduce((s,p) => s + (p.gross||0), 0) / approved.length;
+
+    // Apply average rates to current gross
+    const gross = grossPerPaycheck > 0 ? grossPerPaycheck : avgGross;
+    const fedRate      = avgGross > 0 ? avg('fedTax')      / avgGross : 0.12;
+    const ssRate       = avgGross > 0 ? avg('ssTax')       / avgGross : 0.062;
+    const medicareRate = avgGross > 0 ? avg('medicareTax') / avgGross : 0.0145;
+    const stateRate    = avgGross > 0 ? avg('stateTax')    / avgGross : 0.0495;
+
+    document.getElementById('pc-fed').value      = (gross * fedRate).toFixed(2);
+    document.getElementById('pc-state').value    = (gross * stateRate).toFixed(2);
+    document.getElementById('pc-ss').value       = (gross * ssRate).toFixed(2);
+    document.getElementById('pc-medicare').value = (gross * medicareRate).toFixed(2);
+    document.getElementById('pc-401k').value     = avg('deduct401k').toFixed(2);
+    document.getElementById('pc-dental').value   = avg('deductDental').toFixed(2);
+    document.getElementById('pc-kmtchtr').value  = avg('deductKMtchTr').toFixed(2);
   } else {
-    document.getElementById('pc-fed').value      = '';
-    document.getElementById('pc-state').value    = '';
-    document.getElementById('pc-ss').value       = '';
-    document.getElementById('pc-medicare').value = '';
-    document.getElementById('pc-401k').value     = set.deduct401k || 91.43;
+    // Hardcoded IL/Cook County defaults
+    const gross = grossPerPaycheck;
+    document.getElementById('pc-fed').value      = gross > 0 ? (gross * 0.12).toFixed(2)   : '';
+    document.getElementById('pc-state').value    = gross > 0 ? (gross * 0.0495).toFixed(2) : '';
+    document.getElementById('pc-ss').value       = gross > 0 ? (gross * 0.062).toFixed(2)  : '';
+    document.getElementById('pc-medicare').value = gross > 0 ? (gross * 0.0145).toFixed(2) : '';
+    document.getElementById('pc-401k').value     = set.deduct401k  || 91.43;
     document.getElementById('pc-dental').value   = set.deductDental || 3.54;
     document.getElementById('pc-kmtchtr').value  = set.deductKMtchTr || 54.86;
   }
+
+  updatePaycheckNet();
 }
 
 function updatePaycheckNet() {
