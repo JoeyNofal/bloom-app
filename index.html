@@ -642,7 +642,10 @@ html, body {
             <div style="font-size:15px;font-weight:700;" id="next-pay-date">—</div>
             <div style="font-size:12px;font-weight:600;color:var(--light);margin-top:3px;" id="next-pay-days">—</div>
           </div>
-          <div style="font-family:var(--font-display);font-size:28px;font-weight:700;" id="next-pay-amount">—</div>
+          <div>
+              <div style="font-family:var(--font-display);font-size:28px;font-weight:700;" id="next-pay-amount">—</div>
+              <div style="font-size:11px;font-weight:600;color:var(--light);margin-top:3px;" id="next-pay-label">—</div>
+            </div>
         </div>
       </div>
 
@@ -1431,8 +1434,14 @@ function renderDashboard() {
   if (nextPay) {
     document.getElementById('next-pay-date').textContent = fmtDate(nextPay.toISOString().split('T')[0]);
     document.getElementById('next-pay-days').textContent = daysUntil(nextPay);
-    const lastNet = lastApprovedNet();
-    document.getElementById('next-pay-amount').textContent = lastNet ? fmt(lastNet) : '—';
+    const approved = App.data.paychecks.filter(p => p.status === 'approved');
+    const avgNet = approved.length
+      ? approved.reduce((s,p) => s + p.net, 0) / approved.length
+      : null;
+    const salary = parseFloat(App.data.settings.salary) || 0;
+    const predicted = avgNet || (salary > 0 ? salary / 24 : null);
+    document.getElementById('next-pay-amount').textContent = predicted ? fmt(predicted) : '—';
+    document.getElementById('next-pay-label').textContent = avgNet ? 'Based on your avg net pay' : salary > 0 ? 'Based on your salary' : 'Log a paycheck to predict';
   }
 
   // Credit scores
