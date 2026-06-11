@@ -575,6 +575,7 @@ html, body {
     <!-- DASHBOARD -->
     <div class="view active" id="view-dashboard">
 
+      <div id="welcome-msg" style="margin-bottom:18px;"></div>
       <div class="section-header">Accounts</div>
       <div class="balance-grid">
         <div class="balance-card">
@@ -1391,6 +1392,17 @@ function lastApprovedNet() {
 
 function renderDashboard() {
   const acct = App.data.accounts;
+
+  // Welcome message
+  const name = App.data.settings.name || '';
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const welcomeEl = document.getElementById('welcome-msg');
+  if (welcomeEl) {
+    welcomeEl.innerHTML = name
+      ? `<div style="font-family:var(--font-display);font-size:26px;font-weight:700;color:var(--charcoal);line-height:1.2;">${greeting},<br><span style="background:linear-gradient(135deg,#E88FA0,#C9B8E8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${name} 🌸</span></div>`
+      : `<div style="font-family:var(--font-display);font-size:26px;font-weight:700;color:var(--charcoal);">Welcome to Bloom 🌸</div>`;
+  }
   const set  = App.data.settings;
 
   // Balances
