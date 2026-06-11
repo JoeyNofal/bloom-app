@@ -1798,6 +1798,7 @@ function renderLedger(account) {
   txns.forEach(t => {
     const row = document.createElement('div');
     row.className = 'txn-row';
+    row.id = 'txn-row-' + t.id;
     row.innerHTML = `
       <div>
         <div class="tr-desc">${t.desc}</div>
@@ -1812,25 +1813,46 @@ function renderLedger(account) {
   });
 }
 
-let pendingDeleteTxnId = null;
-
 function deleteTxn(id) {
+  const existing = document.getElementById('confirm-' + id);
+  if (existing) { existing.remove(); return; }
+
+  // Remove any other open confirmations
+  document.querySelectorAll('.delete-confirm').forEach(el => el.remove());
+
   const txn = App.data.transactions.find(t => t.id === id);
   if (!txn) return;
 
-  // Inline confirm
-  if (pendingDeleteTxnId === id) {
-    App.data.transactions = App.data.transactions.filter(t => t.id !== id);
-    App.data.accounts[txn.account] -= txn.amount;
-    saveData();
-    renderLedger(currentLedgerAccount);
-    pendingDeleteTxnId = null;
-    showToast('Deleted');
-  } else {
-    pendingDeleteTxnId = id;
-    showToast('Tap × again to confirm delete');
-    setTimeout(() => { pendingDeleteTxnId = null; }, 3000);
-  }
+  const row = document.getElementById('txn-row-' + id);
+  if (!row) return;
+
+  const confirm = document.createElement('div');
+  confirm.id = 'confirm-' + id;
+  confirm.className = 'delete-confirm';
+  confirm.style.cssText = `
+    display:flex;align-items:center;justify-content:space-between;
+    padding:10px 14px;margin-top:4px;
+    background:var(--danger-soft);border-radius:var(--radius-md);
+    animation:slideUp 0.15s ease;
+  `;
+  confirm.innerHTML = `
+    <span style="font-size:13px;font-weight:600;color:var(--danger);">Delete this transaction?</span>
+    <div style="display:flex;gap:8px;">
+      <button onclick="confirmDeleteTxn(${id})" style="background:var(--danger);color:white;border:none;padding:6px 14px;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:12px;font-weight:700;cursor:pointer;">Delete</button>
+      <button onclick="document.getElementById('confirm-${id}').remove()" style="background:var(--cream);color:var(--mid);border:none;padding:6px 14px;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:12px;font-weight:700;cursor:pointer;">Cancel</button>
+    </div>
+  `;
+  row.after(confirm);
+}
+
+function confirmDeleteTxn(id) {
+  const txn = App.data.transactions.find(t => t.id === id);
+  if (!txn) return;
+  App.data.transactions = App.data.transactions.filter(t => t.id !== id);
+  App.data.accounts[txn.account] -= txn.amount;
+  saveData();
+  renderLedger(currentLedgerAccount);
+  showToast('Deleted');
 }
 
 // ═══════════════════════════════════════════════════════
